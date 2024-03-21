@@ -42,6 +42,28 @@ S = [
     [0x63, 0x2F, 0xAF, 0xA2], [0xEB, 0x93, 0xC7, 0x20], 
     [0x9F, 0x92, 0xAB, 0xCB], [0xA0, 0xC0, 0x30, 0x2B],
 ]
+def rot_word(temp):
+    return temp[1:] + [temp[0]] 
+def sub_word(word):
+    return [s_box[i] for i in word]  
+def key_expansion(key):
+    key_schedule = [key[i:i+4] for i in range(0, len(key), 4)]
+    Nk = len(key) // 4
+    Nb = 4
+    Nr = 10  
+    for i in range(Nk, Nb * (Nr + 1)):
+        temp = key_schedule[i-1]
+        if i % Nk == 0:
+            temp = rot_word(temp)
+            temp = sub_word(temp)
+            temp = [temp[j] ^ Rcon[(i//Nk)-1][j] for j in range(4)]
+        key_schedule.append([key_schedule[i-Nk][j] ^ temp[j] for j in range(4)])
+    return key_schedule
+       
+def generate_key():
+    fernet_key = Fernet.generate_key()
+    aes_key_256_bits = fernet_key[:16]
+    return aes_key_256_bits
 
 def mul(a, b):
     if b == 1:
@@ -62,35 +84,42 @@ def set_mix_columns(state):
                 else:
                     new_state[x][i] ^= mul(state[x][k], MIX_columns[i][k])
     return new_state
-st =  set_mix_columns(S)
-print(st)
-
         
-print(0xEB)              
-def generate_key():
-    fernet_key = Fernet.generate_key()
-    aes_key_256_bits = fernet_key[:32]
-    return aes_key_256_bits
 def sub_bytes(state):
     return [[s_box[b] for b in row] for row in state]
+
 def shift_rows(state):
     for i in range(1, 4):
         state[i] = state[i][i:] + state[i][:i]
     return state
+
 def add_round_key(state, round_key):
     return [[state[i][j] ^ round_key[i][j] for j in range(4)] for i in range(4)]
 
-    
+def aes_encrypt(plaintext, key):
+    p_ord_list = list(plaintext.encode("utf-8"))
+    k_ord_list = list(key.encode("utf-8"))
+    state = [[p_ord_list[i + 4 * j] for i in range(4)] for j in range(4)]
+    round_keys = key_expansion(k_ord_list)
+    state = add_round_key(state, round_keys)
+    for i in range(4, len(round_keys)-4, 4):
+        state = sub_bytes(state)
+        state = shift_rows(state)
+        state = set_mix_columns(state)
+        state = add_round_key(state, round_keys[i:])
+        k=i+4
+    state = sub_bytes(state)
+    state = shift_rows(state)
+    state = add_round_key(state, round_keys[k:])
+
+    ciphertext = [state[i][j] for j in range(4) for i in range(4)]
+    return ciphertext
+
+key = "qwertyuop1234567"
+plain = "asdfghjklxizxcvb"
+
+print(aes_encrypt(plain, key))
 key = [0x54, 0x68, 0x61, 0x74, 0x73, 0x20, 0x6D, 0x79,
              0x20, 0x4B, 0x75, 0x6E, 0x67, 0x20, 0x46, 0x75]
-kstate = [[key[i + 4 * j] for i in range(4)] for j in range(4)]
 plain = [0x54, 0x77, 0x6F, 0x20, 0x4F, 0x6E, 0x65, 0x20,
              0x4E, 0x69, 0x6E, 0x65, 0x20, 0x54, 0x77, 0x6F]
-pstate = [[plain[i + 4 * j] for i in range(4)] for j in range(4)]
-print(pstate)
-#Round Key
-for i in range(1, 4):
-    print("sdrf")
-    print(pstate[i][i:] )
-    pstate[i] = pstate[i][i:] + pstate[i][:i]
-    print(pstate[i])
