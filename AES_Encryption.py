@@ -131,7 +131,7 @@ def make16bytes(p_ord_list, length):
         p_ord_list.append(0)
     return p_ord_list
 
-def aes_encrypt(plaintext, key):
+def aes_encryption(plaintext, key):
     p_ord_list = list(plaintext.encode("utf-8"))
     k_ord_list = list(key)
     p_ord_list = make16bytes(p_ord_list, len(k_ord_list))
@@ -143,7 +143,7 @@ def aes_encrypt(plaintext, key):
         ciphertext += [st[j][i] for j in range(4) for i in range(4)]
     return list_base64_encode(ciphertext)
 
-key = generate_key()
-print(key)
-plain = "hello;BuYK7BcqFyoBAw=="
-print(aes_encrypt(plain, key))
+#key = generate_key()
+#print(key)
+#plain = "hello;BuYK7BcqFyoBAw=="
+#print(aes_encryption(plain, key))

@@ -84,8 +84,8 @@ def aes_decryption(ciphertext, key):
     plainText = ''.join(chr(sayi) for sayi in plainText)
     return plainText
 
-cipher = "zyWeZ0O6IeKoBGJBHuVYStFBy+cNYrY+4UBqllsb3xg="
-key = b'gwb5hTl2BcUmYXNr'
+#cipher = "zyWeZ0O6IeKoBGJBHuVYStFBy+cNYrY+4UBqllsb3xg="
+#key = b'gwb5hTl2BcUmYXNr'
 
-print(aes_decryption(cipher, key))
+#print(aes_decryption(cipher, key))
 
