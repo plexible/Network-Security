@@ -78,13 +78,13 @@ def main():
   while(is_prime(int(prime_second))!=True or int(prime_first)>=int(prime_second)):
     prime_second = input("Enter the second prime number: ")
   PR, PU = generate_keys(83, 89)
-  print("Private Key: ", PU)
-  print("Public Key: ", PR)
+  print("Public Key: ", PU)
+  print("Private Key: ", PR)
   plainText = input("Enter the message: ")
   print()
   print("**************RSA Signiture*****************")
   print("Message: "+ plainText)
-  signed_message = RSA_signature(plainText, PU)
+  signed_message = RSA_signature(plainText, PR)
   print()
   print("**************Verification*****************")
   while True:

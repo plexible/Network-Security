@@ -2,6 +2,7 @@
 
 #Import
 from cryptography.fernet import Fernet
+import base64
 
 #AES S-Box
 s_box = [
@@ -44,8 +45,10 @@ S = [
 ]
 def rot_word(temp):
     return temp[1:] + [temp[0]] 
+
 def sub_word(word):
     return [s_box[i] for i in word]  
+
 def key_expansion(key):
     key_schedule = [key[i:i+4] for i in range(0, len(key), 4)]
     Nk = len(key) // 4
@@ -73,6 +76,14 @@ def mul(a, b):
         return tmp if a < 128 else tmp ^ 0x1b
     if b == 3:
         return mul(a, 2) ^ a
+    if b == 9:
+        return mul(mul(mul(a, 2), 2), 2) ^ a
+    if b == 11:
+        return mul(mul(mul(a, 2), 2) ^ a, 2) ^ a
+    if b == 13:
+        return mul(mul(mul(a, 2) ^ a, 2), 2) ^ a
+    if b == 14:
+        return mul(mul(mul(a, 2) ^ a, 2) ^ a, 2)
 
 def set_mix_columns(state):
     new_state = [[0 for _ in range(4)] for _ in range(4)]  # Yeni bir matris oluşturuyoruz
@@ -96,30 +107,43 @@ def shift_rows(state):
 def add_round_key(state, round_key):
     return [[state[i][j] ^ round_key[i][j] for j in range(4)] for i in range(4)]
 
-def aes_encrypt(plaintext, key):
-    p_ord_list = list(plaintext.encode("utf-8"))
-    k_ord_list = list(key.encode("utf-8"))
-    state = [[p_ord_list[i + 4 * j] for i in range(4)] for j in range(4)]
-    round_keys = key_expansion(k_ord_list)
+def list_base64_encode(ciphertext):
+    byte_string = bytes(ciphertext)
+    base64_string = base64.b64encode(byte_string).decode()
+    return base64_string
+
+def aes_rounds(state, round_keys):
     state = add_round_key(state, round_keys)
     for i in range(4, len(round_keys)-4, 4):
         state = sub_bytes(state)
         state = shift_rows(state)
         state = set_mix_columns(state)
         state = add_round_key(state, round_keys[i:])
-        k=i+4
+    k=i+4
     state = sub_bytes(state)
     state = shift_rows(state)
     state = add_round_key(state, round_keys[k:])
+    return state
 
-    ciphertext = [state[i][j] for j in range(4) for i in range(4)]
-    return ciphertext
+# Listeyi 16'ya bölümünden kalanı kontrol et
+def make16bytes(p_ord_list, length):
+    while len(p_ord_list) % 16 != 0:
+        p_ord_list.append(0)
+    return p_ord_list
 
-key = "qwertyuop1234567"
-plain = "asdfghjklxizxcvb"
+def aes_encrypt(plaintext, key):
+    p_ord_list = list(plaintext.encode("utf-8"))
+    k_ord_list = list(key)
+    p_ord_list = make16bytes(p_ord_list, len(k_ord_list))
+    state = [[p_ord_list[i + 4 * j] for i in range(4)] for j in range(len(p_ord_list)//4)]
+    ciphertext = []
+    round_keys = key_expansion(k_ord_list)
+    for i in range(4,(len(p_ord_list)//4)+1,4):
+        st = aes_rounds(state[i-4:i], round_keys)
+        ciphertext += [st[j][i] for j in range(4) for i in range(4)]
+    return list_base64_encode(ciphertext)
 
+key = generate_key()
+print(key)
+plain = "hello;BuYK7BcqFyoBAw=="
 print(aes_encrypt(plain, key))
-key = [0x54, 0x68, 0x61, 0x74, 0x73, 0x20, 0x6D, 0x79,
-             0x20, 0x4B, 0x75, 0x6E, 0x67, 0x20, 0x46, 0x75]
-plain = [0x54, 0x77, 0x6F, 0x20, 0x4F, 0x6E, 0x65, 0x20,
-             0x4E, 0x69, 0x6E, 0x65, 0x20, 0x54, 0x77, 0x6F]
