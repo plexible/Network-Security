@@ -1,6 +1,9 @@
-from AES_Encryption import aes_encryption, generate_key
+import base64
+from AES_Encryption import aes_encryption, list_base64_encode
 from AES_decryption import aes_decryption
-from RSA_signiture import is_prime, generate_keys, RSA_signature, verify_message
+from Diffie_Hellman import generate_dh_parameters, generate_keypair, generate_shared_key
+from RSA_signiture import RSA_signature, generate_keys, is_prime, verify_message
+
 
 def main():
     print("**************SENDER*****************")
@@ -21,9 +24,13 @@ def main():
     signed_message = RSA_signature(plainText, PR)
     print()
     print("**************AES Encryption*****************")
-    key = generate_key()
-    print(f"Generated Key: {key}")
-    encrypted_message = aes_encryption(signed_message, key)
+    parameters = generate_dh_parameters()
+    bob_private_key, bob_public_key = generate_keypair(parameters)
+    alice_private_key, alice_public_key = generate_keypair(parameters)
+    bob_shared_key = generate_shared_key(bob_private_key, alice_public_key)
+    alice_shared_key = generate_shared_key(alice_private_key, bob_public_key)
+    print(f"Generated Bob Shared Key: {base64.b64encode(bob_shared_key).decode()}")
+    encrypted_message = aes_encryption(signed_message, bob_shared_key)
     print()
     print(f"Message encrypted!\nEncrypted Message: {encrypted_message}")
     print()
@@ -32,7 +39,8 @@ def main():
     print("**************RECIEVER*****************")
     print()
     print("**************AES Decryption*****************")
-    decrypted_message = aes_decryption(encrypted_message, key)
+    print(f"Generated Alice Shared Key: {base64.b64encode(alice_shared_key).decode()}")
+    decrypted_message = aes_decryption(encrypted_message, alice_shared_key)
     print(f"Message decrypted!\nDecrypted Message: {decrypted_message}")
     print()
     print("**************Verification*****************")
@@ -50,4 +58,3 @@ def main():
         except ValueError:
             print("Invalid input format. Please enter the private key in the format 'd, n'.")
 main()
-

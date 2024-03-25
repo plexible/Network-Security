@@ -39,10 +39,6 @@ MIX_columns = [
     [0x03, 0x01, 0x01, 0x02],
 ]
 
-S = [
-    [0x63, 0x2F, 0xAF, 0xA2], [0xEB, 0x93, 0xC7, 0x20], 
-    [0x9F, 0x92, 0xAB, 0xCB], [0xA0, 0xC0, 0x30, 0x2B],
-]
 def rot_word(temp):
     return temp[1:] + [temp[0]] 
 
@@ -127,7 +123,7 @@ def aes_rounds(state, round_keys):
 
 # Listeyi 16'ya bölümünden kalanı kontrol et
 def make16bytes(p_ord_list, length):
-    while len(p_ord_list) % 16 != 0:
+    while len(p_ord_list) % length != 0:
         p_ord_list.append(0)
     return p_ord_list
 
