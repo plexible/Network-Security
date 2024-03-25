@@ -14,7 +14,7 @@ def main():
     prime_second = input("Enter the second prime number: ")
     while(is_prime(int(prime_second))!=True or int(prime_first)>=int(prime_second)):
         prime_second = input("Enter the second prime number: ")
-    PR, PU = generate_keys(83, 89)
+    PR, PU = generate_keys(int(prime_first), int(prime_first))
     print("Public Key: ", PU)
     print("Private Key: ", PR)
     plainText = input("Enter the message: ")
