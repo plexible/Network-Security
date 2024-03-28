@@ -1,6 +1,6 @@
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives.asymmetric import dh
-from AES_Encryption import aes_encryption
+from AES_encryption import aes_encryption
 from AES_decryption import aes_decryption
 import os
 

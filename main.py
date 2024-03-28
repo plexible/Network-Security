@@ -1,5 +1,5 @@
 import base64
-from AES_Encryption import aes_encryption, list_base64_encode
+from AES_encryption import aes_encryption, list_base64_encode
 from AES_decryption import aes_decryption
 from Diffie_Hellman import generate_dh_parameters, generate_keypair, generate_shared_key
 from RSA_signiture import RSA_signature, generate_keys, is_prime, verify_message
